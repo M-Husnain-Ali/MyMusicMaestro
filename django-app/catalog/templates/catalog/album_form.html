@@ -1,0 +1,1162 @@
+{% extends "catalog/base.html" %}
+
+{% block title %}
+    {% if form.instance.pk %}Edit Album: {{ form.instance.title }}{% else %}Create New Album{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Modern, Professional Album Form Styling */
+.form-container {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 2rem 0;
+    position: relative;
+}
+
+.form-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.container {
+    position: relative;
+    z-index: 2;
+}
+
+.form-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 24px;
+    box-shadow: 0 32px 64px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    animation: slideUpFade 1s ease-out;
+    max-width: 1400px;
+    margin: 0 auto;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.form-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 3rem 2rem;
+    text-align: center;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.form-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: float 6s ease-in-out infinite;
+}
+
+.form-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    position: relative;
+    z-index: 2;
+}
+
+.form-header p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin: 0;
+    position: relative;
+    z-index: 2;
+}
+
+.album-form {
+    padding: 3rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 3rem;
+    margin-bottom: 3rem;
+}
+
+.form-group {
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15), 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-1px);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+/* Album Cover Section */
+.album-cover {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 2rem;
+    border: 2px dashed #cbd5e0;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.album-cover:hover {
+    border-color: #667eea;
+    background: #f0f4ff;
+}
+
+.image-preview {
+    width: 100%;
+    height: 300px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.image-preview:hover img {
+    transform: scale(1.05);
+}
+
+.no-image-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    font-size: 1.1rem;
+}
+
+.no-image-placeholder::before {
+    content: '🖼️';
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+/* File Input Styling */
+.album-cover input[type="file"] {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+    font-size: 0.9rem;
+}
+
+/* Django's file input "Currently:" text styling */
+.album-cover .form-group > div {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    font-size: 0.9rem;
+    color: #4a5568;
+}
+
+.album-cover .form-group a {
+    color: #667eea;
+    text-decoration: none;
+    margin-left: 0.5rem;
+}
+
+.album-cover .form-group a:hover {
+    text-decoration: underline;
+}
+
+/* Professional Tracklist Section */
+.tracklist-section {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border-radius: 20px;
+    padding: 3rem;
+    margin-top: 3rem;
+    border: 1px solid #e2e8f0;
+    position: relative;
+}
+
+.tracklist-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.tracklist-header h3 {
+    color: #1a202c;
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-group {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn:hover::before {
+    left: 100%;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(113, 128, 150, 0.4);
+}
+
+.btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(113, 128, 150, 0.6);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(72, 187, 120, 0.4);
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(72, 187, 120, 0.6);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(245, 101, 101, 0.4);
+}
+
+.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(245, 101, 101, 0.6);
+}
+
+.btn-outline-secondary {
+    background: transparent;
+    border: 2px solid #e2e8f0;
+    color: #4a5568;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+.btn-outline-secondary:hover {
+    background: #f7fafc;
+    border-color: #cbd5e0;
+    transform: translateY(-1px);
+}
+
+/* Track Items */
+.track-item {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 2px solid transparent;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.track-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.track-item:hover {
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(102, 126, 234, 0.15);
+}
+
+.track-item:hover::before {
+    transform: scaleX(1);
+}
+
+.track-content {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.track-number {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    flex-shrink: 0;
+}
+
+.track-details {
+    flex: 1;
+}
+
+.song-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 1rem;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.song-select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
+
+.track-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.btn-sm {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    border-radius: 8px;
+}
+
+/* Error Styling */
+.field-error {
+    color: #e53e3e;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: #fed7d7;
+    border-radius: 6px;
+    border-left: 4px solid #e53e3e;
+}
+
+.alert {
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 2rem;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+    color: #742a2a;
+    border-left: 4px solid #e53e3e;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
+    color: #22543d;
+    border-left: 4px solid #38a169;
+}
+
+/* Empty State */
+.empty-tracklist {
+    text-align: center;
+    padding: 3rem;
+    color: #718096;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    border: 2px dashed #cbd5e0;
+}
+
+.empty-tracklist h4 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #4a5568;
+}
+
+.empty-tracklist::before {
+    content: '🎵';
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+/* Hide DELETE checkboxes */
+.track-item input[type="checkbox"][name$="-DELETE"] { 
+    display: none !important; 
+}
+
+/* Animations */
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(5deg); }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.shake {
+    animation: shake 0.5s ease-in-out;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .album-form {
+        padding: 2rem 1.5rem;
+    }
+    
+    .tracklist-section {
+        padding: 2rem 1.5rem;
+    }
+    
+    .tracklist-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .btn-group {
+        justify-content: center;
+    }
+}
+
+/* Success notification */
+.success-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(72, 187, 120, 0.4);
+    z-index: 10000;
+    animation: slideInRight 0.5s ease-out;
+    max-width: 350px;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="container">
+        <div class="form-card">
+            <div class="form-header">
+                <h1>
+                    {% if form.instance.pk %}
+                        ✏️ Edit Album: {{ form.instance.title }}
+                    {% else %}
+                        ✨ Create New Album
+                    {% endif %}
+                </h1>
+                <p>Fill in the album details and add songs to create your tracklist</p>
+            </div>
+
+            <form method="post" enctype="multipart/form-data" id="album-form">
+                {% csrf_token %}
+                
+                <!-- Display form errors -->
+                {% if form.errors or tracklist_has_errors %}
+                    <div class="alert alert-danger">
+                        <strong>Please correct the highlighted fields below.</strong>
+                        {% if form.errors %}
+                        <ul class="mt-2 mb-0">
+                            {% for field, errors in form.errors.items %}
+                                {% for error in errors %}<li>{{ field }}: {{ error }}</li>{% endfor %}
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                
+                <div class="form-grid">
+                    <div class="album-details">
+                        <!-- Album Form Fields -->
+                        <div class="form-group">
+                            <label for="{{ form.title.id_for_label }}">🎵 {{ form.title.label }}</label>
+                            {{ form.title }}
+                            {% for error in form.title.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.artist.id_for_label }}">🎤 {{ form.artist.label }}</label>
+                            {{ form.artist }}
+                            {% for error in form.artist.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.price.id_for_label }}">💰 {{ form.price.label }}</label>
+                            {{ form.price }}
+                            {% for error in form.price.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.format.id_for_label }}">💿 {{ form.format.label }}</label>
+                            {{ form.format }}
+                            {% for error in form.format.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.release_date.id_for_label }}">📅 {{ form.release_date.label }}</label>
+                            {{ form.release_date }}
+                            {% for error in form.release_date.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.description.id_for_label }}">📝 {{ form.description.label }}</label>
+                            {{ form.description }}
+                            {% for error in form.description.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="album-cover">
+                        <div class="form-group">
+                            <label for="{{ form.cover_image.id_for_label }}">🖼️ {{ form.cover_image.label }}</label>
+                            <div class="image-preview" id="imagePreview">
+                                {% if form.instance.cover_image %}
+                                    <img src="{{ form.instance.cover_image.url }}" alt="Album Cover" style="width: 100%; border-radius: 10px;">
+                                {% else %}
+                                    <div class="no-image-placeholder">
+                                        No image selected
+                                    </div>
+                                {% endif %}
+                            </div>
+                            {{ form.cover_image }}
+                            {% for error in form.cover_image.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tracklist Section -->
+                <div class="tracklist-section">
+                    <div class="tracklist-header">
+                        <h3>🎶 Album Tracklist</h3>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-secondary" id="add-existing-song">
+                                ➕ Add Existing Song
+                            </button>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#create-song-modal">
+                                ✨ Create New Song
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Formset Management -->
+                    {{ tracklist_formset.management_form }}
+                    
+                    <div id="tracklist-container">
+                        {% for track_form in tracklist_formset.forms %}
+                            <div class="track-item" data-form-index="{{ forloop.counter0 }}">
+                                <div class="track-content">
+                                    <div class="track-number">{{ forloop.counter }}</div>
+                                    <div class="track-details">
+                                        {{ track_form.song }}
+                                        {{ track_form.position }}
+                                        {{ track_form.id }}
+                                        {{ track_form.DELETE }}
+                                        {% if track_form.song.errors %}
+                                            <div class="field-error">{{ track_form.song.errors|join:', ' }}</div>
+                                        {% endif %}
+                                        {% if track_form.non_field_errors %}
+                                            <div class="field-error">{{ track_form.non_field_errors|join:', ' }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="track-actions">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm move-up" title="Move Up">⬆️</button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm move-down" title="Move Down">⬇️</button>
+                                        <button type="button" class="btn btn-danger btn-sm remove-track" data-track-index="{{ forloop.counter0 }}" title="Remove Track">🗑️</button>
+                                    </div>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="empty-tracklist" id="empty-tracklist">
+                                <h4>No tracks added yet</h4>
+                                <p>Add songs to create your album tracklist</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Hidden template for new tracks -->
+                    <div id="empty-form-template" style="display: none;">
+                        <div class="track-item" data-form-index="__prefix__">
+                            <div class="track-content">
+                                <div class="track-number"></div>
+                                <div class="track-details">
+                                    {{ tracklist_formset.empty_form.song }}
+                                    {{ tracklist_formset.empty_form.position }}
+                                    {{ tracklist_formset.empty_form.id }}
+                                    {% if tracklist_formset.empty_form.DELETE %}
+                                        <span style="display:none;">{{ tracklist_formset.empty_form.DELETE }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="track-actions">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm move-up">⬆️</button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm move-down">⬇️</button>
+                                    <button type="button" class="btn btn-danger btn-sm remove-track">
+                                        🗑️ Remove
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions" style="display: flex; justify-content: space-between; align-items: center; margin-top: 3rem; padding-top: 2rem; border-top: 2px solid #e2e8f0;">
+                    <a href="{% url 'album-list' %}" class="btn btn-outline-secondary">
+                        ← Cancel
+                    </a>
+                    <button type="submit" class="btn btn-success btn-lg">
+                        {% if form.instance.pk %}
+                            💾 Update Album
+                        {% else %}
+                            ✨ Create Album
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Create Song Modal -->
+<div class="modal fade" id="create-song-modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">🎵 Create New Song</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="song-form-errors" style="display: none;"></div>
+                <form id="create-song-form">
+                    <div class="form-group">
+                        <label for="song-title">Song Title</label>
+                        <input type="text" class="form-control" id="song-title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="song-running-time">Running Time (seconds)</label>
+                        <input type="number" class="form-control" id="song-running-time" min="10" required>
+                        <small class="text-muted">Minimum 10 seconds</small>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-success">
+                            ✨ Create and Add to Album
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // DOM Elements
+    const tracklistContainer = document.getElementById('tracklist-container');
+    const addExistingSongBtn = document.getElementById('add-existing-song');
+    const totalFormsInput = document.getElementById('id_albumtracklistitem_set-TOTAL_FORMS');
+    const emptyFormTemplate = document.getElementById('empty-form-template');
+    const emptyTracklist = document.getElementById('empty-tracklist');
+    const albumForm = document.getElementById('album-form');
+    
+    let formIndex = parseInt(totalFormsInput.value) || 0;
+    let isSubmitting = false;
+
+    // Utility Functions
+    function showNotification(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} success-notification`;
+        notification.innerHTML = `
+            <strong>${type === 'success' ? '✅' : '❌'}</strong> ${message}
+        `;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+
+    function addShakeEffect(element) {
+        element.classList.add('shake');
+        setTimeout(() => element.classList.remove('shake'), 500);
+    }
+
+    function getVisibleTrackItems() {
+        return Array.from(tracklistContainer.querySelectorAll('.track-item'))
+            .filter(item => {
+                if (item.id === 'empty-tracklist') return false;
+                const deleteCheckbox = item.querySelector('input[name$="-DELETE"]');
+                const isMarkedForDeletion = deleteCheckbox && deleteCheckbox.checked;
+                const isHidden = item.style.display === 'none';
+                return !isMarkedForDeletion && !isHidden;
+            });
+    }
+
+    function updateTrackNumbers() {
+        const visibleItems = getVisibleTrackItems();
+        
+        // Update track numbers and positions
+        visibleItems.forEach((item, index) => {
+            const trackNumber = item.querySelector('.track-number');
+            const positionInput = item.querySelector('input[name$="-position"]');
+            
+            if (trackNumber) trackNumber.textContent = index + 1;
+            if (positionInput) positionInput.value = index + 1;
+        });
+
+        // Show/hide empty state
+        if (emptyTracklist) {
+            emptyTracklist.style.display = visibleItems.length === 0 ? 'block' : 'none';
+        }
+
+        // Update form count
+        updateFormCount();
+    }
+
+    function updateFormCount() {
+        const allItems = Array.from(tracklistContainer.querySelectorAll('.track-item'))
+            .filter(item => item.id !== 'empty-tracklist');
+        totalFormsInput.value = allItems.length;
+    }
+
+    function validateDuplicateSongs() {
+        const visibleItems = getVisibleTrackItems();
+        const songValues = [];
+        let hasDuplicates = false;
+
+        visibleItems.forEach(item => {
+            const songSelect = item.querySelector('select[name$="-song"]');
+            const errorContainer = item.querySelector('.field-error');
+            
+            // Remove existing error
+            if (errorContainer) errorContainer.remove();
+            
+            if (songSelect && songSelect.value) {
+                if (songValues.includes(songSelect.value)) {
+                    // Add duplicate error
+                    const error = document.createElement('div');
+                    error.className = 'field-error';
+                    error.textContent = 'This song is already added to the album';
+                    songSelect.parentNode.appendChild(error);
+                    addShakeEffect(item);
+                    hasDuplicates = true;
+                } else {
+                    songValues.push(songSelect.value);
+                }
+            }
+        });
+
+        return !hasDuplicates;
+    }
+
+    function addNewTrack(songId = '', songTitle = '') {
+        if (!emptyFormTemplate) {
+            console.error('Empty form template not found');
+            return;
+        }
+
+        const newForm = emptyFormTemplate.cloneNode(true);
+        newForm.style.display = 'block';
+        newForm.id = '';
+        
+        // Replace __prefix__ with actual form index
+        newForm.innerHTML = newForm.innerHTML.replace(/__prefix__/g, formIndex);
+        newForm.setAttribute('data-form-index', formIndex);
+        
+        // Set song if provided
+        if (songId) {
+            const songSelect = newForm.querySelector('select[name$="-song"]');
+            if (songSelect) {
+                songSelect.value = songId;
+            }
+        }
+        
+        // Insert before empty state if it exists
+        if (emptyTracklist && emptyTracklist.style.display !== 'none') {
+            tracklistContainer.insertBefore(newForm, emptyTracklist);
+        } else {
+            tracklistContainer.appendChild(newForm);
+        }
+        
+        formIndex++;
+        updateTrackNumbers();
+        
+        // Add entrance animation
+        newForm.style.opacity = '0';
+        newForm.style.transform = 'translateY(20px)';
+        requestAnimationFrame(() => {
+            newForm.style.transition = 'all 0.3s ease';
+            newForm.style.opacity = '1';
+            newForm.style.transform = 'translateY(0)';
+        });
+    }
+
+    function removeTrack(trackItem) {
+        const deleteCheckbox = trackItem.querySelector('input[name$="-DELETE"]');
+        
+        if (deleteCheckbox) {
+            // Mark for deletion (existing track)
+            deleteCheckbox.checked = true;
+            trackItem.style.display = 'none';
+        } else {
+            // Remove completely (new track)
+            trackItem.style.transition = 'all 0.3s ease';
+            trackItem.style.opacity = '0';
+            trackItem.style.transform = 'translateX(-20px)';
+            setTimeout(() => trackItem.remove(), 300);
+        }
+        
+        updateTrackNumbers();
+        showNotification('Track removed from album', 'success');
+    }
+
+    function moveTrack(trackItem, direction) {
+        const visibleItems = getVisibleTrackItems();
+        const currentIndex = visibleItems.indexOf(trackItem);
+        
+        if (direction === 'up' && currentIndex > 0) {
+            const prevItem = visibleItems[currentIndex - 1];
+            tracklistContainer.insertBefore(trackItem, prevItem);
+        } else if (direction === 'down' && currentIndex < visibleItems.length - 1) {
+            const nextItem = visibleItems[currentIndex + 1];
+            tracklistContainer.insertBefore(nextItem, trackItem);
+        }
+        
+        updateTrackNumbers();
+    }
+
+    // Event Listeners
+    if (addExistingSongBtn) {
+        addExistingSongBtn.addEventListener('click', function() {
+            addNewTrack();
+        });
+    }
+
+    // Track actions (move up/down/remove)
+    tracklistContainer.addEventListener('click', function(e) {
+        const trackItem = e.target.closest('.track-item');
+        if (!trackItem || trackItem.id === 'empty-tracklist') return;
+
+        if (e.target.closest('.move-up')) {
+            moveTrack(trackItem, 'up');
+        } else if (e.target.closest('.move-down')) {
+            moveTrack(trackItem, 'down');
+        } else if (e.target.closest('.remove-track')) {
+            removeTrack(trackItem);
+        }
+    });
+
+    // Real-time duplicate validation
+    tracklistContainer.addEventListener('change', function(e) {
+        if (e.target.matches('select[name$="-song"]')) {
+            setTimeout(() => validateDuplicateSongs(), 100);
+        }
+    });
+
+    // Create new song modal handling
+    const createSongForm = document.getElementById('create-song-form');
+    const songFormErrors = document.getElementById('song-form-errors');
+    
+    if (createSongForm) {
+        createSongForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '⏳ Creating...';
+            submitBtn.disabled = true;
+            
+            const title = document.getElementById('song-title').value.trim();
+            const runningTime = document.getElementById('song-running-time').value.trim();
+            
+            if (!title || !runningTime) {
+                showSongFormError('Please fill in all fields.');
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('running_time', runningTime);
+            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+            
+            fetch("{% url 'create_song_ajax' %}", {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Add song to all existing selects
+                    const songSelects = document.querySelectorAll('select[name$="-song"]');
+                    songSelects.forEach(select => {
+                        const option = document.createElement('option');
+                        option.value = data.song.id;
+                        option.textContent = data.song.title;
+                        select.appendChild(option);
+                    });
+                    
+                    // Add new track with the created song
+                    addNewTrack(data.song.id, data.song.title);
+                    
+                    // Close modal and reset form
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('create-song-modal'));
+                    modal.hide();
+                    createSongForm.reset();
+                    hideSongFormError();
+                    
+                    showNotification(`Song "${data.song.title}" created and added!`);
+                } else {
+                    showSongFormError(data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showSongFormError('An error occurred while creating the song.');
+            })
+            .finally(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
+        });
+    }
+    
+    function showSongFormError(message) {
+        if (songFormErrors) {
+            songFormErrors.innerHTML = `<div class="alert alert-danger">${message}</div>`;
+            songFormErrors.style.display = 'block';
+        }
+    }
+    
+    function hideSongFormError() {
+        if (songFormErrors) {
+            songFormErrors.style.display = 'none';
+        }
+    }
+
+    // Image preview
+    const coverImageInput = document.getElementById('id_cover_image');
+    const imagePreview = document.getElementById('imagePreview');
+    
+    if (coverImageInput && imagePreview) {
+        coverImageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.innerHTML = `<img src="${e.target.result}" alt="Album Cover Preview" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // Form submission handling
+    if (albumForm) {
+        albumForm.addEventListener('submit', function(e) {
+            if (isSubmitting) {
+                e.preventDefault();
+                return;
+            }
+
+            // Validate duplicates
+            if (!validateDuplicateSongs()) {
+                e.preventDefault();
+                showNotification('Please fix duplicate songs before saving', 'danger');
+                return;
+            }
+
+            isSubmitting = true;
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '⏳ Saving...';
+            submitBtn.disabled = true;
+
+            // Clean up empty tracks and ensure proper indexing
+            const allTrackItems = Array.from(tracklistContainer.querySelectorAll('.track-item'))
+                .filter(item => item.id !== 'empty-tracklist');
+            
+            let position = 1;
+            allTrackItems.forEach(item => {
+                const songSelect = item.querySelector('select[name$="-song"]');
+                const positionInput = item.querySelector('input[name$="-position"]');
+                const deleteCheckbox = item.querySelector('input[name$="-DELETE"]');
+                const isHidden = item.style.display === 'none';
+                
+                if (isHidden || (deleteCheckbox && deleteCheckbox.checked)) {
+                    // Skip deleted items
+                    return;
+                }
+                
+                if (!songSelect || !songSelect.value || songSelect.value === '') {
+                    // Mark empty rows for deletion
+                    if (deleteCheckbox) {
+                        deleteCheckbox.checked = true;
+                    } else {
+                        item.remove();
+                    }
+                } else {
+                    // Set proper position
+                    if (positionInput) {
+                        positionInput.value = position++;
+                    }
+                }
+            });
+
+            // Reset submission state on any error
+            setTimeout(() => {
+                isSubmitting = false;
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }, 1000);
+        });
+    }
+
+    // Initialize
+    updateTrackNumbers();
+});
+</script>
+{% endblock %} 

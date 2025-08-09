@@ -1,0 +1,273 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+.registration-container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.registration-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+}
+
+.registration-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.registration-header p {
+    margin: 0.5rem 0 0 0;
+    opacity: 0.9;
+}
+
+.registration-form {
+    padding: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.help-text {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.recent-users {
+    background: #f8f9fa;
+    padding: 2rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.recent-users h3 {
+    color: #495057;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+}
+
+.user-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    border-left: 4px solid #667eea;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.user-role {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+}
+
+.role-editor { background-color: #28a745; }
+.role-artist { background-color: #007bff; }
+.role-viewer { background-color: #6c757d; }
+
+.errorlist {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0 0;
+}
+
+.errorlist li {
+    color: #dc3545;
+    font-size: 0.875rem;
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    padding: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.messages {
+    margin-bottom: 1rem;
+}
+
+.alert {
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: 8px;
+}
+
+.alert-success {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="registration-container">
+    <div class="registration-header">
+        <h1>🎵 Register New User</h1>
+        <p>Create a new account for MyMusicMaestro system</p>
+    </div>
+    
+    <div class="registration-form">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="{{ form.username.id_for_label }}">👤 Username</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.username.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.email.id_for_label }}">📧 Email Address</label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.email.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.display_name.id_for_label }}">🎭 Display Name</label>
+                {{ form.display_name }}
+                <div class="help-text">{{ form.display_name.help_text }}</div>
+                {% if form.display_name.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.display_name.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.role.id_for_label }}">🔐 Role</label>
+                {{ form.role }}
+                <div class="help-text">{{ form.role.help_text }}</div>
+                {% if form.role.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.role.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.password1.id_for_label }}">🔒 Password</label>
+                {{ form.password1 }}
+                {% if form.password1.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.password1.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.password2.id_for_label }}">🔒 Confirm Password</label>
+                {{ form.password2 }}
+                {% if form.password2.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.password2.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            
+            <button type="submit" class="btn-primary">
+                ✅ Create User Account
+            </button>
+        </form>
+    </div>
+    
+    {% if users %}
+    <div class="recent-users">
+        <h3>📋 Recently Created Users</h3>
+        {% for user in users %}
+        <div class="user-card">
+            <strong>{{ user.display_name }}</strong> (@{{ user.username }})
+            <span class="user-role role-{{ user.role }}">{{ user.get_role_display }}</span>
+            <div style="font-size: 0.875rem; color: #6c757d; margin-top: 0.25rem;">
+                📅 Created: {{ user.date_joined|date:"M d, Y" }}
+                {% if user.email %}| 📧 {{ user.email }}{% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

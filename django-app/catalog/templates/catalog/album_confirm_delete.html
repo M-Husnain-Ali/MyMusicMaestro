@@ -1,0 +1,377 @@
+{% extends "catalog/base.html" %}
+
+{% block title %}Delete Album - {{ album.title }} - MyMusicMaestro{% endblock %}
+
+{% block content %}
+<div class="delete-container">
+    <div class="container">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'album-list' %}">🏠 Albums</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'album-detail' album.pk %}">{{ album.title }}</a>
+                </li>
+                <li class="breadcrumb-item active">🗑️ Delete</li>
+            </ol>
+        </nav>
+        
+        <!-- Delete Card -->
+        <div class="delete-card">
+            <div class="delete-header">
+                <div class="warning-icon">⚠️</div>
+                <h1>Delete Album</h1>
+                <p>Are you sure you want to delete this album?</p>
+            </div>
+            
+            <div class="album-preview">
+                <div class="preview-image">
+                    {% if album.cover_image %}
+                        <img src="{{ album.cover_image.url }}" alt="{{ album.title }} cover">
+                    {% else %}
+                        <div class="default-cover">
+                            <div class="music-notes">
+                                <span class="note">🎵</span>
+                                <span class="note">🎶</span>
+                                <span class="note">🎵</span>
+                            </div>
+                            <p class="album-title-small">{{ album.title }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="preview-info">
+                    <h2>{{ album.title }}</h2>
+                    <p class="artist">by {{ album.artist }}</p>
+                    
+                    <div class="album-meta">
+                        <div class="meta-item">
+                            <span class="meta-icon">💿</span>
+                            <span class="meta-value">{{ album.get_format_display }}</span>
+                        </div>
+                        
+                        <div class="meta-item">
+                            <span class="meta-icon">📅</span>
+                            <span class="meta-value">{{ album.release_date|date:"F j, Y" }}</span>
+                        </div>
+                        
+                        <div class="meta-item">
+                            <span class="meta-icon">💰</span>
+                            <span class="meta-value">£{{ album.price }}</span>
+                        </div>
+                        
+                        {% if album.tracks.count > 0 %}
+                            <div class="meta-item">
+                                <span class="meta-icon">🎵</span>
+                                <span class="meta-value">{{ album.tracks.count }} tracks</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="warning-message">
+                <p>⚠️ This action cannot be undone. The album and all its associated data will be permanently deleted.</p>
+            </div>
+            
+            <form method="post" class="delete-form">
+                {% csrf_token %}
+                <div class="form-actions">
+                    <button type="submit" class="btn-delete">
+                        🗑️ Delete Album
+                    </button>
+                    
+                    <a href="{% url 'album-detail' album.pk %}" class="btn-cancel">
+                        ❌ Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Delete Container */
+.delete-container {
+    padding: 3rem 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: calc(100vh - 160px);
+}
+
+/* Breadcrumb */
+.breadcrumb-nav {
+    margin-bottom: 2rem;
+}
+
+.breadcrumb {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1rem 1.5rem;
+    border-radius: 15px;
+    margin: 0;
+}
+
+.breadcrumb-item a {
+    color: white;
+    text-decoration: none;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.breadcrumb-item a:hover {
+    opacity: 1;
+}
+
+.breadcrumb-item.active {
+    color: white;
+    opacity: 0.6;
+}
+
+/* Delete Card */
+.delete-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    animation: slideUp 0.8s ease-out;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Delete Header */
+.delete-header {
+    background: #fff5f5;
+    padding: 2rem;
+    text-align: center;
+    border-bottom: 1px solid #feb2b2;
+}
+
+.warning-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.delete-header h1 {
+    color: #dc3545;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.delete-header p {
+    color: #666;
+    margin: 0;
+}
+
+/* Album Preview */
+.album-preview {
+    padding: 2rem;
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    border-bottom: 1px solid #e1e5e9;
+}
+
+.preview-image {
+    width: 200px;
+    height: 200px;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.preview-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.default-cover {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.music-notes {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.note {
+    display: inline-block;
+    animation: float 2s ease-in-out infinite;
+}
+
+.note:nth-child(2) {
+    animation-delay: 0.5s;
+}
+
+.note:nth-child(3) {
+    animation-delay: 1s;
+}
+
+.preview-info {
+    flex: 1;
+}
+
+.preview-info h2 {
+    font-size: 1.8rem;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.artist {
+    color: #666;
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Album Meta */
+.album-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #666;
+}
+
+.meta-icon {
+    font-size: 1.2rem;
+}
+
+/* Warning Message */
+.warning-message {
+    padding: 2rem;
+    background: #fff5f5;
+    border-bottom: 1px solid #feb2b2;
+}
+
+.warning-message p {
+    color: #dc3545;
+    margin: 0;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* Form Actions */
+.delete-form {
+    padding: 2rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn-delete {
+    flex: 2;
+    padding: 1rem;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-delete:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(220, 53, 69, 0.3);
+}
+
+.btn-cancel {
+    flex: 1;
+    padding: 1rem;
+    background: #f8f9fa;
+    color: #666;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.btn-cancel:hover {
+    background: #e9ecef;
+}
+
+/* Animations */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .delete-container {
+        padding: 2rem 1rem;
+    }
+    
+    .delete-card {
+        border-radius: 15px;
+    }
+    
+    .album-preview {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .preview-image {
+        margin: 0 auto;
+    }
+    
+    .album-meta {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn-delete,
+    .btn-cancel {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %} 

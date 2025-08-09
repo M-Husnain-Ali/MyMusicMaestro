@@ -1,0 +1,487 @@
+{% extends "catalog/base.html" %}
+{% load catalog_extras %}
+
+{% block title %}{{ album.title }} - MyMusicMaestro{% endblock %}
+
+{% block content %}
+<div class="album-detail-container">
+    <div class="container">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'album-list' %}">🏠 Albums</a>
+                </li>
+                <li class="breadcrumb-item active">{{ album.title }}</li>
+            </ol>
+        </nav>
+        
+        <!-- Album Header -->
+        <div class="album-header">
+            <div class="row align-items-center">
+                <!-- Album Cover -->
+                <div class="col-md-4">
+                    <div class="album-cover-container">
+                        {% if album.cover_image %}
+                            <img src="{{ album.cover_image.url }}" alt="{{ album.title }} cover" class="album-cover">
+                        {% else %}
+                            <div class="default-cover">
+                                <div class="music-notes">
+                                    <span class="note">🎵</span>
+                                    <span class="note">🎶</span>
+                                    <span class="note">🎵</span>
+                                </div>
+                                <p class="album-title-small">{{ album.title }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Album Info -->
+                <div class="col-md-8">
+                    <div class="album-info">
+                        <h1 class="album-title">{{ album.title }}</h1>
+                        <p class="album-artist">by {{ album.artist }}</p>
+                        
+                        <div class="album-meta">
+                            <div class="meta-item">
+                                <span class="meta-icon">💿</span>
+                                <span class="meta-label">Format</span>
+                                <span class="meta-value format-badge format-{{ album.format }}">
+                                    {{ album.get_format_display }}
+                                </span>
+                            </div>
+                            
+                            <div class="meta-item">
+                                <span class="meta-icon">📅</span>
+                                <span class="meta-label">Release Date</span>
+                                <span class="meta-value">{{ album.release_date|date:"F j, Y" }}</span>
+                            </div>
+                            
+                            <div class="meta-item">
+                                <span class="meta-icon">💰</span>
+                                <span class="meta-label">Price</span>
+                                <span class="meta-value">£{{ album.price }}</span>
+                            </div>
+                            
+                            {% if album.tracks.count > 0 %}
+                                <div class="meta-item">
+                                    <span class="meta-icon">⏱️</span>
+                                    <span class="meta-label">Total Playtime</span>
+                                    <span class="meta-value">
+                                        {% with total_seconds=album.total_playtime %}
+                                            {% widthratio total_seconds 60 1 %}:{% widthratio total_seconds 60 1|add:"-1"|add:1|stringformat:"02d" %} min
+                                        {% endwith %}
+                                    </span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if can_edit or can_delete %}
+                            <div class="album-actions">
+                                {% if can_edit %}
+                                    <a href="{% url 'album-edit' album.pk %}" class="btn btn-edit">
+                                        ✏️ Edit Album
+                                    </a>
+                                {% endif %}
+                                
+                                {% if can_delete %}
+                                    <a href="{% url 'album-delete' album.pk %}" class="btn btn-delete">
+                                        🗑️ Delete Album
+                                    </a>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Album Description -->
+        {% if album.description %}
+            <div class="album-description">
+                <h2>📝 Description</h2>
+                <div class="description-content">
+                    {{ album.description|linebreaks }}
+                </div>
+            </div>
+        {% endif %}
+        
+        <!-- Tracklist -->
+        {% if album.tracklist %}
+            <div class="tracklist-section">
+                <h2>🎵 Tracklist</h2>
+                <div class="tracklist">
+                    {% for track in album.tracklist %}
+                        <div class="track-item">
+                            <div class="track-number">{{ track.position|default:forloop.counter }}</div>
+                            <div class="track-info">
+                                <div class="track-title">{{ track.song.title }}</div>
+                                <div class="track-duration">
+                                    {{ track.song.running_time|format_duration }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Total Duration -->
+                <div class="album-total-duration">
+                    <strong>Total Duration: {{ album.total_playtime|format_duration }}</strong>
+                </div>
+            </div>
+        {% else %}
+            <div class="no-tracks">
+                <p>🎵 No tracks available for this album yet.</p>
+                {% if user.is_authenticated and user.role == 'editor' or user.role == 'artist' and album.artist|lower == user.display_name|lower %}
+                    <a href="{% url 'album-edit' album.pk %}" class="btn btn-primary">Add Tracks</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+/* Album Detail Container */
+.album-detail-container {
+    padding: 3rem 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: calc(100vh - 160px);
+    color: white;
+}
+
+/* Breadcrumb */
+.breadcrumb-nav {
+    margin-bottom: 2rem;
+}
+
+.breadcrumb {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1rem 1.5rem;
+    border-radius: 15px;
+    margin: 0;
+}
+
+.breadcrumb-item a {
+    color: white;
+    text-decoration: none;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.breadcrumb-item a:hover {
+    opacity: 1;
+}
+
+.breadcrumb-item.active {
+    color: white;
+    opacity: 0.6;
+}
+
+/* Album Header */
+.album-header {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    backdrop-filter: blur(10px);
+    animation: fadeIn 0.8s ease-out;
+}
+
+/* Album Cover */
+.album-cover-container {
+    position: relative;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    animation: slideInLeft 0.8s ease-out;
+}
+
+.album-cover {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.album-cover:hover {
+    transform: scale(1.05);
+}
+
+.default-cover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.music-notes {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.note {
+    display: inline-block;
+    animation: float 2s ease-in-out infinite;
+}
+
+.note:nth-child(2) {
+    animation-delay: 0.5s;
+}
+
+.note:nth-child(3) {
+    animation-delay: 1s;
+}
+
+/* Album Info */
+.album-info {
+    padding-left: 2rem;
+    animation: slideInRight 0.8s ease-out;
+}
+
+.album-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.album-artist {
+    font-size: 1.5rem;
+    opacity: 0.8;
+    margin-bottom: 2rem;
+}
+
+/* Meta Information */
+.album-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.meta-item {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1rem;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.meta-icon {
+    font-size: 1.5rem;
+}
+
+.meta-label {
+    font-size: 0.9rem;
+    opacity: 0.7;
+}
+
+.meta-value {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.format-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.format-dd { background: rgba(25, 118, 210, 0.2); }
+.format-cd { background: rgba(46, 125, 50, 0.2); }
+.format-vi { background: rgba(194, 24, 91, 0.2); }
+
+/* Album Actions */
+.album-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.btn-edit {
+    background: rgba(40, 167, 69, 0.2);
+    color: white;
+}
+
+.btn-delete {
+    background: rgba(220, 53, 69, 0.2);
+    color: white;
+}
+
+/* Album Description */
+.album-description {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    backdrop-filter: blur(10px);
+    animation: fadeIn 0.8s ease-out 0.2s both;
+}
+
+.album-description h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.description-content {
+    line-height: 1.8;
+    opacity: 0.9;
+}
+
+/* Tracklist */
+.tracklist-section {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 2rem;
+    backdrop-filter: blur(10px);
+    animation: fadeIn 0.8s ease-out 0.4s both;
+}
+
+.tracklist-section h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.track-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    animation: fadeIn 0.5s ease-out both;
+}
+
+.track-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(10px);
+}
+
+.track-number {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    margin-right: 1rem;
+}
+
+.track-info {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.track-title {
+    font-weight: 500;
+}
+
+.track-duration {
+    font-family: monospace;
+    opacity: 0.8;
+}
+
+/* No Tracks */
+.no-tracks {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 2rem;
+    text-align: center;
+    animation: fadeIn 0.8s ease-out 0.4s both;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .album-detail-container {
+        padding: 2rem 1rem;
+    }
+    
+    .album-header {
+        padding: 1.5rem;
+    }
+    
+    .album-info {
+        padding-left: 0;
+        padding-top: 2rem;
+    }
+    
+    .album-title {
+        font-size: 2rem;
+    }
+    
+    .album-artist {
+        font-size: 1.2rem;
+    }
+    
+    .album-meta {
+        grid-template-columns: 1fr;
+    }
+    
+    .album-actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %} 

@@ -1,0 +1,292 @@
+{% extends "catalog/base.html" %}
+
+{% block title %}Login - MyMusicMaestro{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="logo-container">
+                    <svg width="60" height="60" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="20" cy="20" r="18" fill="url(#gradient)" stroke="#667eea" stroke-width="2"/>
+                        <circle cx="20" cy="20" r="12" fill="none" stroke="#764ba2" stroke-width="2"/>
+                        <circle cx="20" cy="20" r="6" fill="none" stroke="#667eea" stroke-width="2"/>
+                        <circle cx="20" cy="20" r="2" fill="#764ba2"/>
+                        <defs>
+                            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#667eea" stop-opacity="0.2"/>
+                                <stop offset="100%" stop-color="#764ba2" stop-opacity="0.2"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <h1>Welcome Back! 👋</h1>
+                <p>Sign in to manage your music catalog</p>
+            </div>
+
+            <div class="login-form">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <p>🚫 Your username and password didn't match. Please try again.</p>
+                    </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label for="{{ form.username.id_for_label }}">
+                            <span class="icon">👤</span> Username
+                        </label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <div class="form-errors">
+                                {% for error in form.username.errors %}
+                                    <div class="error-message">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.password.id_for_label }}">
+                            <span class="icon">🔒</span> Password
+                        </label>
+                        {{ form.password }}
+                        {% if form.password.errors %}
+                            <div class="form-errors">
+                                {% for error in form.password.errors %}
+                                    <div class="error-message">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <button type="submit" class="btn-login">
+                        Sign In <span class="icon">→</span>
+                    </button>
+                    
+                    <input type="hidden" name="next" value="{{ next }}">
+                </form>
+            </div>
+            
+            <div class="login-footer">
+                <p>Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Login Container */
+.login-container {
+    padding: 3rem 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: calc(100vh - 160px);
+}
+
+/* Login Card */
+.login-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    animation: slideUp 0.8s ease-out;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+/* Login Header */
+.login-header {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    padding: 2rem;
+    text-align: center;
+}
+
+.logo-container {
+    margin-bottom: 1.5rem;
+    animation: float 3s ease-in-out infinite;
+}
+
+.login-header h1 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.login-header p {
+    color: #666;
+    margin: 0;
+}
+
+/* Login Form */
+.login-form {
+    padding: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.icon {
+    margin-right: 0.5rem;
+}
+
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e1e5e9;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+/* Form Errors */
+.form-errors {
+    margin-top: 0.5rem;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 0.875rem;
+    background: #fff5f5;
+    border: 1px solid #feb2b2;
+    border-radius: 5px;
+    padding: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+/* Login Button */
+.btn-login {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+/* Login Footer */
+.login-footer {
+    text-align: center;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+}
+
+.login-footer p {
+    margin: 0;
+    color: #666;
+}
+
+.login-footer a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.login-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Alerts */
+.alert {
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-danger {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Animations */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .login-container {
+        padding: 2rem 1rem;
+    }
+    
+    .login-card {
+        border-radius: 15px;
+    }
+    
+    .login-header {
+        padding: 1.5rem;
+    }
+    
+    .login-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .login-form {
+        padding: 1.5rem;
+    }
+}
+</style>
+{% endblock %} 
